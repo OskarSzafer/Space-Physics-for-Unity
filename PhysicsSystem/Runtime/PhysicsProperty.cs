@@ -271,7 +271,7 @@ public class PhysicsProperty : PhysicsSystem
         //     Debug.Log("Merged atmosphere radius: " + mergedAtmosphereRadius);
         // }
 
-        // change radius based on previous atmosphere radius and mass change
+        // change radius based on previous radius and change of mass
         // assuming 2D space
         if (changeRadius)
         {
