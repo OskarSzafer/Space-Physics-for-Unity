@@ -15,5 +15,4 @@ The package consists of two main components:
 ![image](https://github.com/OskarSzafer/Space-Physics-for-Unity/assets/68118272/b76fbbc5-c463-4e8b-a31a-5b97564f8087)
 
 # Examples
-The folder contains a [sample script](/PhysicsSystem/Examples/CelestialBody.cs) for celestial body that uses the functions and signals of PhysicsProperty.
-The methods of this class assume that the size of the object sprites is normalized to one unit.
+The [package](SpacePhysicsForUnity.unitypackage) contains a sample script for celestial body that uses the functions and signals of PhysicsProperty.
