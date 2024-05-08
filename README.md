@@ -15,4 +15,6 @@ The package consists of two main components:
 ![image](https://github.com/OskarSzafer/Space-Physics-for-Unity/assets/68118272/b76fbbc5-c463-4e8b-a31a-5b97564f8087)
 
 # Examples
-The [package](SpacePhysicsForUnity.unitypackage) contains a sample script for celestial body that uses the functions and signals of PhysicsProperty.
+The [package](SpacePhysicsForUnity.unitypackage) includes sample scripts and prefabs for [demo](https://github.com/OskarSzafer/Space-Physics-for-Unity/assets/68118272/6b26cb15-e457-438b-92c9-8d8df75f687a),
+utilizing the functions and signals of PhysicsProperty.
+
