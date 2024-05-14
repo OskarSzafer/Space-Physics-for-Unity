@@ -16,11 +16,11 @@ public class PhysicsProperty : PhysicsSystem
     // BODY PROPERTIES
     [SerializeField] protected bool physicsEnabled = true;
     [SerializeField] protected float mass;
-    public float Mass { get { return mass; } set { mass = (mass == 0) ? 1 : mass; } }
+    public float Mass { get { return mass; } set { mass = (value == 0) ? 1 : value; } }
     [SerializeField] protected float radius;
-    public float Radius { get { return radius; } set { radius = (radius == 0) ? transform.localScale.x / 2 : radius; } }
+    public float Radius { get { return radius; } set { radius = (value == 0) ? transform.localScale.x / 2 : value; } }
     [SerializeField] protected float atmosphereRadius;
-    public float AtmosphereRadius { get { return atmosphereRadius; } set { atmosphereRadius = (atmosphereRadius < radius) ? radius : atmosphereRadius; } }
+    public float AtmosphereRadius { get { return atmosphereRadius; } set { atmosphereRadius = (value < radius) ? radius : value; } }
     [SerializeField] public Vector2 velocity = Vector2.zero;
     
     // RUNTIME VARIABLES
@@ -37,8 +37,8 @@ public class PhysicsProperty : PhysicsSystem
     void Awake()
     {
         mass = (mass == 0) ? 1 : mass;
-        Radius = (Radius == 0) ? transform.localScale.x / 2 : Radius;
-        AtmosphereRadius = (atmosphereRadius < radius) ? Radius : AtmosphereRadius;
+        radius = (radius == 0) ? transform.localScale.x / 2 : radius;
+        atmosphereRadius = (atmosphereRadius < radius) ? radius : atmosphereRadius;
     }
 
     void Start()
@@ -208,10 +208,11 @@ public class PhysicsProperty : PhysicsSystem
 
         float orbitalSpeed = Mathf.Sqrt(gravitationalConstant * target.GetComponent<PhysicsProperty>().Mass / distance);
         Vector2 orbitalVelocity = Vector2.Perpendicular(forceDirection).normalized * orbitalSpeed;
+        Vector2 worldOrbitalVelocity = orbitalVelocity + target.GetComponent<PhysicsProperty>().velocity;
 
         if (Vector2.Dot(velocity, orbitalVelocity) < 0) orbitalVelocity *= -1;
 
-        velocity = orbitalVelocity;
+        velocity = worldOrbitalVelocity;
     }
 
     // Body ignores forces other than gravity of the target until the threshold is reached,
@@ -271,7 +272,7 @@ public class PhysicsProperty : PhysicsSystem
         //     Debug.Log("Merged atmosphere radius: " + mergedAtmosphereRadius);
         // }
 
-        // change radius based on previous radius and change of mass
+        // change radius based on previous atmosphere radius and mass change
         // assuming 2D space
         if (changeRadius)
         {
