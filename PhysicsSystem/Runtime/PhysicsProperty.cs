@@ -25,6 +25,7 @@ public class PhysicsProperty : PhysicsSystem
     
     // RUNTIME VARIABLES
     protected Vector2 netForce = Vector2.zero; // sum of all forces between updates
+    protected Vector2 previousNetForce = Vector2.zero; // sum of all forces between last two updates
     // keep on orbit variables
     protected bool keptOnOrbit = false;
     protected float keptOnOrbitForceThreshold;
@@ -34,7 +35,10 @@ public class PhysicsProperty : PhysicsSystem
     public event CollisionEventHandler OnCollisionDetected;
 
     // GETTERS
-    public bool KeptOnOrbit { get { return keptOnOrbit; } }
+    public bool physicsEnabledStatus { get { return physicsEnabled; } }
+    public bool isKeptOnOrbit { get { return keptOnOrbit; } }
+    public GameObject GetOrbitSource { get { return OrbitSource; } }
+    public Vector2 PreviousNetForce { get { return previousNetForce; } }
 
 
     void Awake()
@@ -75,11 +79,20 @@ public class PhysicsProperty : PhysicsSystem
 
     void Update()
     {
-
+        
     }
 
     void FixedUpdate()
     {   
+        Vector3 velocityScaled = new Vector3(velocity.x * 10, velocity.y * 10, 0);
+        Debug.DrawLine(transform.position, transform.position + velocityScaled, Color.blue, 0.1f);
+        
+        Vector3 accelerationScaled = new Vector3(netForce.x * 10 / mass, netForce.y * 10 / mass, 0);
+        Debug.DrawLine(transform.position, transform.position + accelerationScaled, Color.yellow, 0.1f);
+
+        Vector3 forceScaled = new Vector3(netForce.x * 10, netForce.y * 10, 0);
+        Debug.DrawLine(transform.position, transform.position + forceScaled, Color.red, 0.1f);
+
         if (physicsEnabled)
         {
             CalculateVelocity();
@@ -101,10 +114,12 @@ public class PhysicsProperty : PhysicsSystem
             else
             {
                 netForce = GravitySourceForce;
+                netForce += (OrbitSource.GetComponent<PhysicsProperty>().PreviousNetForce / OrbitSource.GetComponent<PhysicsProperty>().Mass) * mass;
             }
         }
 
         velocity += netForce / mass;
+        previousNetForce = netForce;
         netForce = Vector2.zero;
     }
 
@@ -161,6 +176,19 @@ public class PhysicsProperty : PhysicsSystem
         }
     }
 
+    // returns center of circular orbit of this object
+    public Vector2 OrbitCenter()
+    {
+        Vector2 centripetalForceDirection = Vector2.Perpendicular(velocity).normalized;
+        float centripetalForce = Vector2.Dot(previousNetForce / Time.fixedDeltaTime, centripetalForceDirection);
+        
+        if (centripetalForce == 0) return new Vector2(float.NaN, float.NaN);
+        
+        float circularOrbitRadius = Mathf.Pow(velocity.magnitude, 2) / (centripetalForce / mass); // we need only perpendicular component of net force
+        Vector2 circularOrbitCenter = (Vector2)transform.position + circularOrbitRadius*centripetalForceDirection;
+        return circularOrbitCenter;
+    }
+
     // called by PhysicsController
     internal void CollisionDetected(GameObject collidedObject)
     {
@@ -211,10 +239,10 @@ public class PhysicsProperty : PhysicsSystem
 
         float orbitalSpeed = Mathf.Sqrt(gravitationalConstant * target.GetComponent<PhysicsProperty>().Mass / distance);
         Vector2 orbitalVelocity = Vector2.Perpendicular(forceDirection).normalized * orbitalSpeed;
+
+        if (Vector2.Dot(velocity - target.GetComponent<PhysicsProperty>().velocity, orbitalVelocity) < 0) orbitalVelocity *= -1;
+
         Vector2 worldOrbitalVelocity = orbitalVelocity + target.GetComponent<PhysicsProperty>().velocity;
-
-        if (Vector2.Dot(velocity, orbitalVelocity) < 0) orbitalVelocity *= -1;
-
         velocity = worldOrbitalVelocity;
     }
 
@@ -247,11 +275,6 @@ public class PhysicsProperty : PhysicsSystem
                 keptOnOrbitForceThreshold = GravityBetween(gameObject, source).magnitude * Time.fixedDeltaTime * gravityFractionThreshold;
             }
         }
-    }
-
-    public GameObject GetOrbitSource()
-    {
-        return OrbitSource;
     }
 
     // merge two celestial bodies
